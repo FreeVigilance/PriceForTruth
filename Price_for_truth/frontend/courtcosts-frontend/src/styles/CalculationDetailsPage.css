@@ -1,0 +1,397 @@
+/* Общая настройка */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f6f8;
+    font-family: 'Segoe UI', sans-serif;
+    color: #333;
+    overflow: hidden;
+  }
+  
+  /* Контейнер всей страницы */
+  .calculation-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 32px 48px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  /* Верхняя панель */
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  
+  /* Кнопки "Назад" и "Выйти" */
+  .navigation-buttons {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .navigation-buttons button {
+    padding: 8px 16px;
+    background-color: #3f51b5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .navigation-buttons button:hover {
+    background-color: #303f9f;
+  }
+  
+  /* Заголовок */
+  .gantt-header {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  /* Кнопка открытия справочника */
+  .catalog-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  
+  .catalog-toggle {
+    padding: 12px 20px;
+    background-color: #3f51b5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    width: auto;
+  }
+  
+  .catalog-toggle:hover {
+    background-color: #2c387e;
+  }
+  
+  /* Затемнение под модальным справочником */
+  .catalog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    display: flex;
+    justify-content: flex-end;
+    align-items: stretch;
+  }
+  
+  /* Модальное окно справочника */
+  .catalog-modal {
+    width: 320px;
+    background-color: #fff;
+    padding: 20px;
+    height: 100%;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+  }
+  
+  /* Категории */
+  .category-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 12px;
+  }
+  
+  .category-list li {
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    transition: background-color 0.2s;
+  }
+  
+  .category-list li:hover {
+    background-color: #f0f0ff;
+  }
+  
+  .category-list li.active {
+    background-color: #d0d0ff;
+    font-weight: bold;
+  }
+  
+  /* Траты в справочнике */
+  .category-spendings {
+    margin-top: 12px;
+  }
+  
+  .category-spendings ul {
+    list-style: disc;
+    margin-left: 20px;
+  }
+  
+  /* Кнопка добавления траты */
+  .create-spending-button {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .create-spending-button:hover {
+    background-color: #388e3c;
+  }
+  
+  /* Модалка для создания траты */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    background-color: white;
+    padding: 24px;
+    width: 420px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .modal-content input,
+  .modal-content select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+  }
+  
+  .modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+  }
+  
+  .save-button,
+  .cancel-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .save-button {
+    background-color: #3f51b5;
+    color: white;
+  }
+  
+  .save-button:hover {
+    background-color: #2c387e;
+  }
+  
+  .cancel-button {
+    background-color: #e0e0e0;
+    color: #333;
+  }
+  
+  .cancel-button:hover {
+    background-color: #bbb;
+  }
+  
+  /* Диапазон дат в форме */
+  .date-range {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  /* Диаграмма Ганта */
+  .gantt-chart-wrapper {
+    flex-grow: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin-top: 20px;
+  }
+  
+  .calculation-container svg {
+    overflow: visible !important;
+    min-width: 1000px;
+  }
+  
+  /* Сумма иска */
+  .gantt-total {
+    margin-top: 20px;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  
+  .gantt-header-with-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+
+  .gantt-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* расстояние между заголовком и кнопкой */
+    margin-bottom: 10px;
+  }
+  
+  .gantt-title {
+    margin: 0;
+  }
+
+  .calculation-description {
+    font-size: 14px;
+    color: #666; /* чуть светлее основного текста */
+    margin: 4px 0 12px 0;
+  }
+  
+
+  .calc-buttons-inline {
+    margin-left: 16px;
+    gap: 10px;
+    display: flex;
+  }
+  
+  .gantt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .gantt-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  
+  .gantt-title {
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  
+  .calc-buttons-inline button {
+    font-size: 14px;
+    padding: 4px 8px;
+    border: none;
+    border-radius: 6px;
+    
+    cursor: pointer;
+  }
+  
+  .calc-buttons-inline .edit-btn {
+    background-color: #f0f0f0;
+  }
+  
+  .calc-buttons-inline .delete-btn {
+    background-color: #ffdddd;
+    color: #a00;
+  }
+  
+  /* CalculationDetailsPage.css */
+  .error-toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffe3e3;
+    color: #a60000;
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    max-width: 90%;
+  }
+  
+  
+  .error-message button {
+    margin-left: 10px;
+    background: none;
+    border: none;
+    color: #a60000;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+
+  .category-spendings ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .category-spendings li {
+    background-color: #f8f9fb;
+    border: 1px solid #dcdde1;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .category-spendings li:hover {
+    background-color: #eef0f5;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  
+  .spending-name {
+    font-weight: 600;
+    font-size: 16px;
+  }
+  
+  .spending-price {
+    font-size: 15px;
+    color: #3f51b5;
+    font-weight: bold;
+  }
+  
+  .spending-search-input {
+    width: 100%;
+    padding: 6px 10px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+  }
+  

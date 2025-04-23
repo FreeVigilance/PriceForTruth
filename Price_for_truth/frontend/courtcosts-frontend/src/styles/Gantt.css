@@ -1,0 +1,200 @@
+.gantt-wrapper {
+    width: 100%;
+    max-width: 1400px;
+    height: 500px;
+    overflow-x: auto;
+    margin-top: 20px;
+  }
+  
+  .gantt-inner {
+    min-width: 1000px;
+  }
+  
+  body {
+    overflow: auto !important;
+  }
+  
+  /* Заменить заголовок столбца "Progress" на "Стоимость" */
+  .gantt .gantt-table .gantt-table-header .gantt-table-header-cell:nth-child(4)::after {
+    content: "Стоимость";
+    color: #333;
+    font-weight: bold;
+  }
+  
+  /* Скрыть оригинальный текст "Progress" */
+  .gantt .gantt-table .gantt-table-header .gantt-table-header-cell:nth-child(4) > * {
+    display: none;
+  }
+
+
+
+  .custom-tooltip {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    padding: 12px 16px;
+    max-width: 280px;
+    font-size: 14px;
+    color: #333;
+    line-height: 1.4;
+  }
+  
+  .sort-bar {
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    color: #333;
+  }
+  
+  .sort-bar label {
+    font-weight: 500;
+    min-width: 100px;
+  }
+  
+  .sort-bar select {
+    padding: 6px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #333;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .sort-bar select:hover {
+    border-color: #888;
+  }
+  
+  .sort-bar select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+  }
+  
+  .sort-bar select[multiple] {
+    height: auto;
+    min-width: 200px;
+    max-height: 120px;
+    padding: 6px;
+  }
+
+  .category-filter {
+    position: relative;
+    display: inline-block;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  .category-filter-toggle {
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #333;
+    min-width: 150px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .category-dropdown {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    z-index: 10;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 12px;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: max-content;
+    min-width: 180px;
+  }
+  
+  .category-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0;
+  }
+  
+  .arrow {
+    margin-left: 8px;
+    font-size: 10px;
+  }
+  
+  .category-filter {
+    position: relative;
+    display: inline-block;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  .category-filter-toggle {
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #333;
+    min-width: 150px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .category-dropdown {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    z-index: 10;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 12px;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: max-content;
+    min-width: 200px;
+  }
+  
+  .category-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0;
+  }
+  
+  .category-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .category-actions button {
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .category-actions button:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .arrow {
+    margin-left: 8px;
+    font-size: 10px;
+  }
+  
