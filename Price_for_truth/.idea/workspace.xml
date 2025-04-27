@@ -4,9 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d8fb294d-1f42-407d-8c4c-7ffd09f83701" name="Changes" comment="add refund in models">
+    <list default="true" id="d8fb294d-1f42-407d-8c4c-7ffd09f83701" name="Changes" comment="fix inflation">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/courtcosts/user/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/courtcosts/user/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/courtcosts/courtcosts/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/courtcosts/courtcosts/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/courtcosts/directory/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/courtcosts/directory/tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/courtcosts/directory/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/courtcosts/directory/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/courtcosts/user/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/courtcosts/user/tests.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -220,7 +223,47 @@
       <option name="project" value="LOCAL" />
       <updated>1745316200171</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="fix inflation">
+      <option name="closed" value="true" />
+      <created>1745412039117</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1745412039117</updated>
+    </task>
+    <task id="LOCAL-00022" summary="fix user">
+      <option name="closed" value="true" />
+      <created>1745413004064</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1745413004064</updated>
+    </task>
+    <task id="LOCAL-00023" summary="fix token">
+      <option name="closed" value="true" />
+      <created>1745572436274</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1745572436275</updated>
+    </task>
+    <task id="LOCAL-00024" summary="add admin url">
+      <option name="closed" value="true" />
+      <created>1745579498617</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1745579498617</updated>
+    </task>
+    <task id="LOCAL-00025" summary="fix inflation">
+      <option name="closed" value="true" />
+      <created>1745678530407</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1745678530407</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -245,7 +288,6 @@
     <MESSAGE value="fix update user profile" />
     <MESSAGE value="delete slug" />
     <MESSAGE value="fix category" />
-    <MESSAGE value="fix user" />
     <MESSAGE value="back SpendingCalculation" />
     <MESSAGE value="added datestart and dateEnd" />
     <MESSAGE value="fix catalog_id" />
@@ -253,6 +295,10 @@
     <MESSAGE value="delete date" />
     <MESSAGE value="add change calculate url" />
     <MESSAGE value="add refund in models" />
-    <option name="LAST_COMMIT_MESSAGE" value="add refund in models" />
+    <MESSAGE value="fix user" />
+    <MESSAGE value="fix token" />
+    <MESSAGE value="add admin url" />
+    <MESSAGE value="fix inflation" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix inflation" />
   </component>
 </project>

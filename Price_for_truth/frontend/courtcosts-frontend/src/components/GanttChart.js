@@ -26,7 +26,8 @@ const CustomTooltipContent = ({ task }) => {
     <div className="custom-tooltip">
       <b>{task.name}</b>: {start} - {end}
       <div>Длительность: {duration} дн.</div>
-      <div>Стоимость: {Number(task.price).toFixed(2)} ₽</div>
+      <div>Стоимость: {Number(task.adjusted_price || task.price).toFixed(2)} ₽</div>
+
     </div>
   );
 };
@@ -82,38 +83,44 @@ const GanttChart = ({ spendings, onSpendingClick }) => {
       return (categoryMap[a.category]?.name || "").localeCompare(
         categoryMap[b.category]?.name || ""
       );
-    if (sortBy === "price") return (a.price || 0) - (b.price || 0);
+      if (sortBy === "price") {
+        const aPrice = parseFloat(a.adjusted_price || a.price || 0);
+        const bPrice = parseFloat(b.adjusted_price || b.price || 0);
+        return aPrice - bPrice;
+      }
+      
     return 0;
   });
 
   const tasks = sortedSpendings
-    .map((s, i) => {
-      const start = new Date(s.dateStart);
-      const end = new Date(s.dateEnd);
-      if (!s.dateStart || !s.dateEnd || isNaN(start.getTime()) || isNaN(end.getTime())) {
-        return null;
-      }
+  .map((s) => {
+    const start = new Date(s.dateStart);
+    const end = new Date(s.dateEnd);
+    if (!s.dateStart || !s.dateEnd || isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return null;
+    }
 
-      const categoryInfo = categoryMap[s.category] || { name: "Другое", color: "#ccc" };
+    const categoryInfo = categoryMap[s.category] || { name: "Другое", color: "#ccc" };
 
-      return {
-        id: `${i}`,
-        name: `${s.name?.trim() || `Трата ${i + 1}`} (${categoryInfo.name})`,
-        start,
-        end,
-        type: "task",
-        progress: 100,
-        isDisabled: true,
-        price: s.price,
-        styles: {
-          backgroundColor: categoryInfo.color,
-          backgroundSelectedColor: categoryInfo.color,
-          progressColor: categoryInfo.color,
-          progressSelectedColor: categoryInfo.color,
-        },
-      };
-    })
-    .filter((t) => t && t.start && t.end);
+    return {
+      id: `${s.id}`,
+      name: `${s.name?.trim() || "Без названия"} (${categoryInfo.name})`,
+      start,
+      end,
+      type: "task",
+      progress: 100,
+      isDisabled: true,
+      price: s.adjusted_price || s.price,
+      styles: {
+        backgroundColor: categoryInfo.color,
+        backgroundSelectedColor: categoryInfo.color,
+        progressColor: categoryInfo.color,
+        progressSelectedColor: categoryInfo.color,
+      },
+    };
+  })
+  .filter(Boolean);
+
 
   const today = new Date();
   const startDate = new Date(today.getFullYear(), 0, 1);
@@ -186,6 +193,7 @@ const GanttChart = ({ spendings, onSpendingClick }) => {
       <div className="gantt-inner">
         {tasks.length > 0 ? (
           <Gantt
+            key={JSON.stringify(tasks)}
             tasks={tasks}
             viewMode={ViewMode.Month}
             listCellWidth="155px"

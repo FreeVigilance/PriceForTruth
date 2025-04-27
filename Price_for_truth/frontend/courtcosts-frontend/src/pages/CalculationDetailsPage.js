@@ -26,6 +26,8 @@ const CalculationDetailsPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
 
 
   const [editedCalculation, setEditedCalculation] = useState({
@@ -45,6 +47,16 @@ const CalculationDetailsPage = () => {
     withInflation: false,
     refund: "",
   });
+
+  useEffect(() => {
+    if (errorMessage) {
+      const timer = setTimeout(() => {
+        setErrorMessage("");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMessage]);
+  
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -99,10 +111,67 @@ const CalculationDetailsPage = () => {
       .then(setCategorySpendings);
   };
 
+  const fetchWithRefresh = async (url, options = {}) => {
+    let token = localStorage.getItem("token");
+    const refresh = localStorage.getItem("refresh_token");
+  
+    if (!token || !refresh) {
+      throw new Error("Missing token or refresh_token");
+    }
+  
+    const makeRequest = async (accessToken) => {
+      const finalOptions = {
+        ...options,
+        headers: {
+          ...(options.headers || {}),
+          Authorization: `Bearer ${accessToken}`,
+        },
+      };
+      return fetch(url, finalOptions);
+    };
+  
+    let response = await makeRequest(token);
+  
+    if (response.status === 401) {
+      // Пытаемся обновить токен
+      const refreshResponse = await fetch("http://localhost:8000/token/refresh/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refresh }),
+      });
+  
+      if (!refreshResponse.ok) {
+        throw new Error("Failed to refresh token");
+      }
+  
+      const data = await refreshResponse.json();
+      localStorage.setItem("token", data.access);
+      response = await makeRequest(data.access);
+    }
+  
+    return response;
+  };
+  
+
+  const validateSpending = (spending) => {
+    const { name, price, refund, dateStart, dateEnd, category } = spending;
+  
+    if (!name || name.trim() === "") return "Название обязательно";
+    if (!price || isNaN(price) || parseFloat(price) < 0) return "Сумма должна быть числом ≥ 0";
+    if (refund === "" || isNaN(refund) || parseFloat(refund) < 0) return "Возврат должен быть числом ≥ 0";
+    if (!dateStart || !dateEnd) return "Обе даты обязательны";
+    if (new Date(dateStart) > new Date(dateEnd)) return "Дата начала должна быть раньше или равна дате конца";
+    if (!category) return "Выберите категорию";
+  
+    return null;
+  };
+
   const handleSpendingTemplateClick = async (spendingId) => {
     try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:8000/catalog/price/${spendingId}/`, {
+        const res = await fetchWithRefresh(`http://localhost:8000/catalog/price/${spendingId}/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -156,8 +225,8 @@ const CalculationDetailsPage = () => {
 
   
   const handleSpendingClick = async (taskId) => {
-    const spending = spendings[parseInt(taskId)];
-    if (!spending) return;
+    const spending = spendings.find((s) => String(s.id) === taskId);
+  if (!spending) return
   
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -171,7 +240,7 @@ const CalculationDetailsPage = () => {
       }
   
       // Загружаем трату
-      const res = await fetch(`http://localhost:8000/spendings/${spending.id}/`, {
+      const res = await fetchWithRefresh(`http://localhost:8000/spendings/${spending.id}/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -194,11 +263,17 @@ const CalculationDetailsPage = () => {
   
 
   const updateSpending = async () => {
+    const error = validateSpending(editingSpending);
+    if (error) {
+      setErrorMessage(error);
+      return;
+    }
+  
     const token = localStorage.getItem("token");
     if (!token || !editingSpending?.id) return;
-
+  
     try {
-      const res = await fetch(`http://localhost:8000/spendings/${editingSpending.id}/`, {
+      const res = await fetchWithRefresh(`http://localhost:8000/spendings/${editingSpending.id}/`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -214,13 +289,14 @@ const CalculationDetailsPage = () => {
       setErrorMessage("Не удалось обновить трату");
     }
   };
+  
 
   const deleteSpending = async () => {
     const token = localStorage.getItem("token");
     if (!token || !editingSpending?.id) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/spendings/${editingSpending.id}/`, {
+      const res = await fetchWithRefresh(`http://localhost:8000/spendings/${editingSpending.id}/`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -235,16 +311,22 @@ const CalculationDetailsPage = () => {
   };
 
   const createSpending = async () => {
+    const error = validateSpending(newSpending);
+    if (error) {
+      setErrorMessage(error);
+      return;
+    }
+  
     const token = localStorage.getItem("token");
     if (!token) return setErrorMessage("Вы не авторизованы");
-
+  
     const payload = {
       ...newSpending,
       calculation: id,
     };
-
+  
     try {
-      const res = await fetch("http://localhost:8000/spending/create/", {
+      const res = await fetchWithRefresh("http://localhost:8000/spending/create/", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -252,7 +334,7 @@ const CalculationDetailsPage = () => {
         },
         body: JSON.stringify(payload),
       });
-
+  
       if (!res.ok) throw new Error("Ошибка при создании");
       const created = await res.json();
       setSpendings([...spendings, created]);
@@ -265,14 +347,17 @@ const CalculationDetailsPage = () => {
         dateEnd: "",
         category: "",
         withInflation: false,
+        refund: "",
       });
     } catch (err) {
       console.error(err);
       setErrorMessage("Не удалось создать трату");
     }
   };
+  
 
-  const totalSpending = spendings.reduce((acc, s) => acc + parseFloat(s.price || 0), 0);
+  const totalSpending = spendings.reduce((acc, s) => acc + parseFloat(s.adjusted_price || s.price || 0), 0);
+
 
 
 
@@ -294,23 +379,26 @@ const CalculationDetailsPage = () => {
     }
   
     const tableBody = [
-      ["Название траты", "Категория", "Сумма", "Сумма возврата"],
+      ["Дата начала", "Категория", "Название траты", "Сумма", "Сумма возврата"],
       ...spendings.map((s) => {
-        const price = parseFloat(s.price || 0);
+        const price = parseFloat(s.adjusted_price || s.price || 0);
+
         const refund = parseFloat(s.refund || 0);
         const categoryName = categories.find((c) => c.id === s.category)?.name || "—";
         const refundableAmount = price * (refund / 100);
+        const startDate = s.dateStart || "—";
     
         return [
-          s.name || "—",
+          startDate,
           categoryName,
+          s.name || "—",
           `${price.toFixed(2)} ₽`,
           `${refundableAmount.toFixed(2)} ₽`,
         ];
       }),
       [
-        { text: "Итого", colSpan: 2, alignment: "right", bold: true },
-        {},
+        { text: "Итого", colSpan: 3, alignment: "right", bold: true },
+        {}, {}, 
         `${totalSpending.toFixed(2)} ₽`,
         {
           text: `${spendings.reduce((acc, s) => {
@@ -322,6 +410,8 @@ const CalculationDetailsPage = () => {
         },
       ],
     ];
+    
+    
     
   
     const docDefinition = {
@@ -335,7 +425,8 @@ const CalculationDetailsPage = () => {
         {
           table: {
             headerRows: 1,
-            widths: ["*", "*","auto", "auto"],
+            widths: ["auto", "auto", "auto", "auto", "auto"],
+
             body: tableBody,
           },
         },
@@ -353,7 +444,7 @@ const CalculationDetailsPage = () => {
     if (!token) return;
   
     try {
-      const res = await fetch(`http://localhost:8000/calculations/${id}/`, {
+      const res = await fetchWithRefresh(`http://localhost:8000/calculations/${id}/`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -371,15 +462,18 @@ const CalculationDetailsPage = () => {
     }
   };
   
-  const deleteCalculation = async () => {
-    const confirmed = window.confirm("Вы уверены, что хотите удалить расчёт? Это действие необратимо.");
-    if (!confirmed) return;
+  const deleteCalculation = () => {
+    setShowDeleteConfirmation(true);
+  };
   
+  
+
+  const confirmDeleteCalculation = async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
   
     try {
-      const res = await fetch(`http://localhost:8000/calculations/${id}/`, {
+      const res = await fetchWithRefresh(`http://localhost:8000/calculations/${id}/`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -392,8 +486,6 @@ const CalculationDetailsPage = () => {
       setErrorMessage("Не удалось удалить расчёт");
     }
   };
-  
-
   
 
 
@@ -527,32 +619,49 @@ const CalculationDetailsPage = () => {
       {showCreateForm && (
         <div className="modal">
           <div className="modal-content">
-            <h4>Добавить свою трату</h4>
-            <input type="text" placeholder="Название" value={newSpending.name} onChange={(e) => setNewSpending({ ...newSpending, name: e.target.value })} />
-            <input type="text" placeholder="Описание" value={newSpending.description} onChange={(e) => setNewSpending({ ...newSpending, description: e.target.value })} />
-            <input type="number" placeholder="Сумма" value={newSpending.price} onChange={(e) => setNewSpending({ ...newSpending, price: e.target.value })} />
-            <input
-              type="number"
-              placeholder="Возврат %"
-              value={newSpending.refund}
-              onChange={(e) => setNewSpending({ ...newSpending, refund: e.target.value })}
-            />
-
-            <div className="date-range">
-              <input type="date" value={newSpending.dateStart} onChange={(e) => setNewSpending({ ...newSpending, dateStart: e.target.value })} />
-              <span>—</span>
-              <input type="date" value={newSpending.dateEnd} onChange={(e) => setNewSpending({ ...newSpending, dateEnd: e.target.value })} />
-            </div>
-            <select value={newSpending.category} onChange={(e) => setNewSpending({ ...newSpending, category: parseInt(e.target.value) })}>
-              <option value="">Выберите категорию</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            <label>
+          <h4>Добавить свою трату</h4>
+<label>
+  Название:
+  <input type="text" placeholder="Например, госпошлина" value={newSpending.name} onChange={(e) => setNewSpending({ ...newSpending, name: e.target.value })} />
+</label>
+<label>
+  Описание:
+  <input type="text" placeholder="Доп. детали траты" value={newSpending.description} onChange={(e) => setNewSpending({ ...newSpending, description: e.target.value })} />
+</label>
+<label>
+  Сумма:
+  <input type="number" placeholder="₽" value={newSpending.price} onChange={(e) => setNewSpending({ ...newSpending, price: e.target.value })} />
+</label>
+<label>
+  Возврат (%):
+  <input type="number" placeholder="0" value={newSpending.refund} onChange={(e) => setNewSpending({ ...newSpending, refund: e.target.value })} />
+</label>
+<div className="date-range">
+  <label>
+    Начало:
+    <input type="date" value={newSpending.dateStart} onChange={(e) => setNewSpending({ ...newSpending, dateStart: e.target.value })} />
+  </label>
+  <div className="date-separator"></div>
+  <label>
+    Примерный конец:
+    <input type="date" value={newSpending.dateEnd} onChange={(e) => setNewSpending({ ...newSpending, dateEnd: e.target.value })} />
+  </label>
+</div>
+<label>
+  Категория:
+  <select value={newSpending.category} onChange={(e) => setNewSpending({ ...newSpending, category: parseInt(e.target.value) })}>
+    <option value="">Выберите категорию</option>
+    {categories.map((c) => (
+      <option key={c.id} value={c.id}>{c.name}</option>
+    ))}
+  </select>
+</label>
+<label>
               <input type="checkbox" checked={newSpending.withInflation} onChange={(e) => setNewSpending({ ...newSpending, withInflation: e.target.checked })} />
               Учитывать инфляцию
             </label>
+
+
             <div className="modal-buttons">
               <button onClick={createSpending} className="save-button">Создать</button>
               <button onClick={() => setShowCreateForm(false)} className="cancel-button">Отмена</button>
@@ -564,43 +673,60 @@ const CalculationDetailsPage = () => {
       {editingSpending && (
         <div className="modal">
           <div className="modal-content">
-            <h4>Редактировать трату</h4>
-            <input type="text" value={editingSpending.name} onChange={(e) => setEditingSpending({ ...editingSpending, name: e.target.value })} />
-            <input type="text" value={editingSpending.description} onChange={(e) => setEditingSpending({ ...editingSpending, description: e.target.value })} />
-            <input type="number" value={editingSpending.price} onChange={(e) => setEditingSpending({ ...editingSpending, price: e.target.value })} />
-            <input
-              type="number"
-              value={editingSpending.refund}
-              onChange={(e) => setEditingSpending({ ...editingSpending, refund: e.target.value })}
-            />
+          <h4>Редактировать трату</h4>
+<label>
+  Название:
+  <input type="text" value={editingSpending.name} onChange={(e) => setEditingSpending({ ...editingSpending, name: e.target.value })} />
+</label>
+<label>
+  Описание:
+  <input type="text" value={editingSpending.description} onChange={(e) => setEditingSpending({ ...editingSpending, description: e.target.value })} />
+</label>
+<label>
+  Сумма:
+  <input type="number" value={editingSpending.price} onChange={(e) => setEditingSpending({ ...editingSpending, price: e.target.value })} />
+</label>
+<label>
+  Возврат (%):
+  <input type="number" value={editingSpending.refund} onChange={(e) => setEditingSpending({ ...editingSpending, refund: e.target.value })} />
+</label>
+<div className="date-range">
+  <label>
+    Начало:
+    <input type="date" value={editingSpending.dateStart} onChange={(e) => setEditingSpending({ ...editingSpending, dateStart: e.target.value })} />
+  </label>
+<div className="date-separator"></div>  
+  <label>
+    Конец:
+    <input type="date" value={editingSpending.dateEnd} onChange={(e) => setEditingSpending({ ...editingSpending, dateEnd: e.target.value })} />
+  </label>
+</div>
+<label>
+  Категория:
+  <select
+    value={editingSpending.category ?? ""}
+    onChange={(e) =>
+      setEditingSpending({
+        ...editingSpending,
+        category: parseInt(e.target.value),
+      })
+    }
+  >
+    <option value="">Выберите категорию</option>
+    {categories.map((c) => (
+      <option key={c.id} value={c.id}>
+        {c.name}
+      </option>
+    ))}
+  </select>
+</label>
+<label>
+<input type="checkbox" checked={editingSpending.withInflation} onChange={(e) => setEditingSpending({ ...editingSpending, withInflation: e.target.checked })} />
 
-
-            <div className="date-range">
-              <input type="date" value={editingSpending.dateStart} onChange={(e) => setEditingSpending({ ...editingSpending, dateStart: e.target.value })} />
-              <span>—</span>
-              <input type="date" value={editingSpending.dateEnd} onChange={(e) => setEditingSpending({ ...editingSpending, dateEnd: e.target.value })} />
-            </div>
-            <select
-                value={editingSpending.category ?? ""}
-                onChange={(e) =>
-                    setEditingSpending({
-                    ...editingSpending,
-                    category: parseInt(e.target.value),
-                    })
-                }
-                >
-                <option value="">Выберите категорию</option>
-                {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                    {c.name}
-                    </option>
-                ))}
-                </select>
-
-            <label>
-              <input type="checkbox" checked={editingSpending.withInflation} onChange={(e) => setEditingSpending({ ...editingSpending, withInflation: e.target.checked })} />
               Учитывать инфляцию
             </label>
+
+
             <div className="modal-buttons">
               <button onClick={updateSpending} className="save-button">Сохранить</button>
               <button onClick={deleteSpending} className="cancel-button">Удалить</button>
@@ -630,21 +756,46 @@ const CalculationDetailsPage = () => {
   Сумма расходов: ₽{totalSpending.toLocaleString("ru-RU", { minimumFractionDigits: 2 })}
 </div>
 <div className="gantt-total">
-  Можно вернуть: ₽{spendings.reduce((acc, s) => {
-    const price = parseFloat(s.price || 0);
-    const refund = parseFloat(s.refund || 0);
-    return acc + price * (refund / 100);
-  }, 0).toLocaleString("ru-RU", { minimumFractionDigits: 2 })}
+Можно вернуть: ₽{spendings.reduce((acc, s) => {
+  const price = parseFloat(s.adjusted_price || s.price || 0);
+  const refund = parseFloat(s.refund || 0);
+  return acc + price * (refund / 100);
+}, 0).toLocaleString("ru-RU", { minimumFractionDigits: 2 })}
+
 </div>
+
+{showDeleteConfirmation && (
+  <div className="modal">
+    <div className="modal-content">
+      <h4>Удалить расчёт?</h4>
+      <p>Вы уверены, что хотите удалить этот расчёт? Это действие необратимо.</p>
+      <div className="modal-buttons">
+        <button onClick={confirmDeleteCalculation} className="delete-button">Удалить</button>
+        <button onClick={() => setShowDeleteConfirmation(false)} className="cancel-button">Отмена</button>
+      </div>
+    </div>
+  </div>
+)}
+
 
 
 {isEditingCalc && (
         <div className="modal">
           <div className="modal-content">
             <h4>Редактировать расчёт</h4>
-            <input type="text" placeholder="Название" value={editedCalculation.name} onChange={(e) => setEditedCalculation({ ...editedCalculation, name: e.target.value })} />
-            <input type="text" placeholder="Описание" value={editedCalculation.description} onChange={(e) => setEditedCalculation({ ...editedCalculation, description: e.target.value })} />
-            <input type="number" placeholder="Сумма" value={editedCalculation.sum} onChange={(e) => setEditedCalculation({ ...editedCalculation, sum: e.target.value })} />
+<label>
+  Название:
+  <input type="text" placeholder="Название расчёта" value={editedCalculation.name} onChange={(e) => setEditedCalculation({ ...editedCalculation, name: e.target.value })} />
+</label>
+<label>
+  Описание:
+  <input type="text" placeholder="Описание" value={editedCalculation.description} onChange={(e) => setEditedCalculation({ ...editedCalculation, description: e.target.value })} />
+</label>
+<label>
+  Сумма иска:
+  <input type="number" placeholder="₽" value={editedCalculation.sum} onChange={(e) => setEditedCalculation({ ...editedCalculation, sum: e.target.value })} />
+</label>
+
             <div className="modal-buttons">
               <button onClick={updateCalculation} className="save-button">Сохранить</button>
               <button onClick={() => setIsEditingCalc(false)} className="cancel-button">Отмена</button>
